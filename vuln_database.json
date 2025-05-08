@@ -1,0 +1,224 @@
+{
+  "Windows XP": {
+    "CVE-2002-0367": {
+      "description": "Remote code execution in Universal Plug and Play (UPnP, enabled by default)",
+      "cvss_v3": {
+        "base_score": 7.8,
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+      },
+      "cvss_v2": {
+        "base_score": 7.2,
+        "vector": "AV:L/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2003-0352": {
+      "description": "Buffer overflow in RPC interface (DCOM, Blaster worm exploit)",
+      "cvss_v2": {
+        "base_score": 7.5,
+        "vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P"
+      }
+    },
+    "CVE-2003-0533": {
+      "description": "Windows Help Center remote code execution via buffer overflow",
+      "cvss_v2": {
+        "base_score": 7.5,
+        "vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P"
+      }
+    },
+    "CVE-2003-0812": {
+      "description": "ASN.1 vulnerability in MSASN1.DLL (code execution via malformed certificates)",
+      "cvss_v2": {
+        "base_score": 7.5,
+        "vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P"
+      }
+    },
+    "CVE-2004-0120": {
+      "description": "LSASS buffer overflow (Sasser worm exploit)",
+      "cvss_v2": {
+        "base_score": 5.0,
+        "vector": "AV:N/AC:L/Au:N/C:N/I:N/A:P"
+      }
+    },
+    "CVE-2004-0420": {
+      "description": "LSASS unchecked buffer remote code execution",
+      "cvss_v2": {
+        "base_score": 10.0,
+        "vector": "AV:N/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2004-1134": {
+      "description": "IIS WebDAV exploit, used to elevate privileges via UNC path",
+      "cvss_v2": {
+        "base_score": 10.0,
+        "vector": "AV:N/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2005-1983": {
+      "description": "Windows Plug and Play local privilege escalation (pre-SP2)",
+      "cvss_v2": {
+        "base_score": 7.5,
+        "vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P"
+      }
+    },
+    "CVE-2005-2120": {
+      "description": "MSHTML buffer overflow via malicious CHM files",
+      "cvss_v2": {
+        "base_score": 6.5,
+        "vector": "AV:N/AC:L/Au:S/C:P/I:P/A:P"
+      }
+    },
+    "CVE-2006-4691": {
+      "description": "IE 6 memory corruption, RCE via crafted web pages",
+      "cvss_v2": {
+        "base_score": 10.0,
+        "vector": "AV:N/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2008-1083": {
+      "description": "Win32.sys privilege escalation on pre-SP2 Windows XP",
+      "cvss_v3": {
+        "base_score": 8.1,
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      "cvss_v2": {
+        "base_score": 9.3,
+        "vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2008-4250": {
+      "description": "NetAPI32.dll vulnerability (Conficker worm exploit)",
+      "cvss_v2": {
+        "base_score": 10.0,
+        "vector": "AV:N/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    }
+  },
+  "Windows 7": {
+    "CVE-2012-0158": {
+      "description": "MSCOMCTL ActiveX control remote code execution (widely exploited)",
+      "cvss_v3": {
+        "base_score": 8.8,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"
+      },
+      "cvss_v2": {
+        "base_score": 9.3,
+        "vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2015-1701": {
+      "description": "Win32k.sys elevation of privilege vulnerability",
+      "cvss_v2": {
+        "base_score": 7.2,
+        "vector": "AV:L/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2016-0167": {
+      "description": "Win32k kernel memory corruption allowing EoP",
+      "cvss_v3": {
+        "base_score": 7.8,
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"
+      },
+      "cvss_v2": {
+        "base_score": 7.2,
+        "vector": "AV:L/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2016-7255": {
+      "description": "Win32k.sys EoP used in targeted attacks post-SP1",
+      "cvss_v2": {
+        "base_score": 7.2,
+        "vector": "AV:L/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2017-0143": {
+      "description": "SMBv1 information disclosure (precursor to EternalBlue)",
+      "cvss_v2": {
+        "base_score": 5.0,
+        "vector": "AV:N/AC:L/Au:N/C:P/I:N/A:N"
+      }
+    },
+    "CVE-2017-0144": {
+      "description": "EternalBlue SMBv1 RCE (WannaCry exploit)",
+      "cvss_v2": {
+        "base_score": 9.3,
+        "vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2017-0145": {
+      "description": "EternalRomance SMBv1 RCE vulnerability",
+      "cvss_v2": {
+        "base_score": 9.3,
+        "vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2017-11882": {
+      "description": "Microsoft Equation Editor RCE (used in phishing)",
+      "cvss_v2": {
+        "base_score": 7.8,
+        "vector": "AV:N/AC:L/Au:N/C:N/I:N/A:C"
+      }
+    },
+    "CVE-2018-8174": {
+      "description": "VBScript engine RCE (Double Kill, exploited via IE)",
+      "cvss_v2": {
+        "base_score": 7.5,
+        "vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P"
+      }
+    },
+    "CVE-2019-0708": {
+      "description": "BlueKeep: RDP wormable RCE",
+      "cvss_v2": {
+        "base_score": 9.8,
+        "vector": "AV:N/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2020-0601": {
+      "description": "CurveBall: CryptoAPI spoofing (affects Windows 7 SP1)",
+      "cvss_v2": {
+        "base_score": 8.1,
+        "vector": "AV:N/AC:H/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2020-0796": {
+      "description": "SMBGhost: SMBv3 compression RCE (only if SMBv3 backported)",
+      "cvss_v2": {
+        "base_score": 10.0,
+        "vector": "AV:N/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    }
+  },
+  "Windows 8.1": {
+    "CVE-2014-6321": {
+      "description": "Schannel remote code execution vulnerability",
+      "cvss_v2": {
+        "base_score": 9.3,
+        "vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2015-0057": {
+      "description": "Win32k.sys privilege escalation",
+      "cvss_v2": {
+        "base_score": 7.2,
+        "vector": "AV:L/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2015-1701": {
+      "description": "Win32k.sys elevation of privilege",
+      "cvss_v2": {
+        "base_score": 7.2,
+        "vector": "AV:L/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2015-2546": {
+      "description": "Kernel memory corruption via TrueType font",
+      "cvss_v2": {
+        "base_score": 7.2,
+        "vector": "AV:L/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    },
+    "CVE-2016-0165": {
+      "description": "Privilege escalation through win32k component",
+      "cvss_v2": {
+        "base_score": 7.2,
+        "vector": "AV:L/AC:L/Au
+::contentReference[oaicite:0]{index=0}
