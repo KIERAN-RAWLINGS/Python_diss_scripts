@@ -4,7 +4,9 @@ import csv
 import netifaces
 import os
 
-VULN_DB_PATH = "vulnerabilities.json"
+# Get the directory where the script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+VULN_DB_PATH = os.path.join(SCRIPT_DIR, "vulnerabilities.json")
 OUTPUT_TEXT = "eol_report.txt"
 OUTPUT_CSV = "eol_report.csv"
 EOL_OS_LIST = ["Windows XP", "Windows 7", "Windows 8.1", "Ubuntu 14.04"]
