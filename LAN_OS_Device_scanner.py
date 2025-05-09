@@ -1,129 +1,185 @@
-import os
+#################################
+# LAN OS Network Scanner
+#################################
+
+# Imports needed libraries
+import nmap
+import netifaces
 import json
 import csv
-import nmap
-import socket
-import subprocess
+import os
 from datetime import datetime
 
-VULN_DB_FILE = "vulnerabilities.json"
-REPORT_CSV = "eol_vulnerability_report.csv"
-REPORT_TXT = "eol_vulnerability_report.txt"
-EOL_OS_LIST = ["Windows XP", "Windows 7", "Windows 8.1"]
-
-def get_local_subnets():
+# Load vulnerability database
+def load_vuln_db(filename="vulnerabilities.json"):
     try:
-        output = subprocess.check_output("ip -4 -o addr | grep -v '127.0.0.1'", shell=True).decode()
-        networks = []
-        for line in output.splitlines():
-            parts = line.split()
-            if len(parts) > 3:
-                ip_interface = parts[3]
-                networks.append(ip_interface)
-        if not networks:
-            print("No available local networks found.")
-            return []
-        return networks
+        # Open the JSON file containing the vulnerability information
+        with open(filename, 'r') as f:
+            return json.load(f)  # Parse and return the data as a Python dictionary
     except Exception as e:
-        print(f"Error getting networks: {e}")
-        return []
-
-def choose_network(networks):
-    print("\nAvailable Networks:")
-    for i, net in enumerate(networks):
-        print(f"[{i}] {net}")
-    while True:
-        try:
-            choice = int(input("\nSelect network to scan: "))
-            if 0 <= choice < len(networks):
-                return networks[choice]
-        except:
-            pass
-        print("Invalid selection. Try again.")
-
-def load_vulnerability_database():
-    try:
-        with open(VULN_DB_FILE, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"Failed to load vulnerability DB: {e}")
+        # If the file cannot be loaded, print an error message and return an empty dictionary
+        print(f"Vulnerability database Failed to load: {e}")
         return {}
 
-def scan_network(subnet):
-    print(f"Scanning network {subnet}...")
-    nm = nmap.PortScanner()
-    try:
-        nm.scan(hosts=subnet, arguments='-O')
-        return nm
-    except Exception as e:
-        print(f"Nmap scan failed: {e}")
-        return None
+# Dynamically detect local subnets
+def detect_networks():
+    nm = nmap.PortScanner()  # Initialize the Nmap port scanner
+    subnets = set()  # Set to hold unique subnets
+    available = []  # List to hold subnets with active hosts
 
-def match_os(osmatch, vuln_db):
-    for eol_os in EOL_OS_LIST:
-        if eol_os.lower() in osmatch.lower():
-            return eol_os
-    return None
+    print("Detecting active interfaces and calculating subnets")
 
-def generate_report(devices):
-    headers = ['IP', 'Hostname', 'Detected OS', 'CVE', 'Description', 'CVSS Score']
-    with open(REPORT_CSV, 'w', newline='') as csvfile, open(REPORT_TXT, 'w') as txtfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(headers)
-
-        txtfile.write(f"EOL Vulnerability Report\nGenerated: {datetime.now()}\n\n")
-
-        for dev in devices:
-            for cve, vuln in dev['vulnerabilities'].items():
-                row = [dev['ip'], dev['hostname'], dev['os'], cve, vuln['description'],
-                       vuln.get('cvss_v3', {}).get('base_score', vuln.get('cvss_v2', {}).get('base_score', 'N/A'))]
-                writer.writerow(row)
-                txtfile.write(f"{dev['ip']} ({dev['hostname']}) - {dev['os']}\n")
-                txtfile.write(f"  {cve}: {vuln['description']}\n")
-                txtfile.write(f"  CVSS Score: {row[-1]}\n\n")
-
-    print(f"\nReport saved to {REPORT_CSV} and {REPORT_TXT}")
-
-def main():
-    print("=== EOL Vulnerability Scanner ===\n")
-
-    networks = get_local_subnets()
-    if not networks:
-        return
-
-    subnet = choose_network(networks)
-
-    vuln_db = load_vulnerability_database()
-    if not vuln_db:
-        return
-
-    scanner = scan_network(subnet)
-    if scanner is None:
-        return
-
-    devices = []
-    for host in scanner.all_hosts():
+    # Iterate through all the network interfaces on the machine
+    for iface in netifaces.interfaces():
         try:
-            osmatch = scanner[host]['osmatch'][0]['name'] if 'osmatch' in scanner[host] and scanner[host]['osmatch'] else "Unknown"
-            matched_os = match_os(osmatch, vuln_db)
-
-            if matched_os:
-                hostname = scanner[host].hostname() if scanner[host].hostname() else "Unknown"
-                device = {
-                    "ip": host,
-                    "hostname": hostname,
-                    "os": matched_os,
-                    "vulnerabilities": vuln_db.get(matched_os, {})
-                }
-                devices.append(device)
+            # Get the addresses for the current network interface
+            addrs = netifaces.ifaddresses(iface)
+            if netifaces.AF_INET in addrs:  # Ensure there's an IPv4 address
+                for link in addrs[netifaces.AF_INET]:
+                    ip = link.get('addr')  # Get the IP address of the interface
+                    netmask = link.get('netmask')  # Get the netmask for the interface
+                    if ip and netmask and not ip.startswith('127.'):  # Ignore loopback addresses
+                        # Calculate the CIDR notation from the netmask
+                        cidr = sum([bin(int(x)).count('1') for x in netmask.split('.')])
+                        subnet = f"{ip}/{cidr}"  # Create the subnet string in CIDR format
+                        subnets.add(subnet)  # Add the subnet to the set (unique subnets)
         except Exception as e:
-            print(f"Error processing host {host}: {e}")
-            continue
+            # If there's an error processing the interface, print the error message
+            print(f"Error processing interface {iface}: {e}")
 
-    if not devices:
-        print("\nNo EOL devices with known vulnerabilities found.")
+    print(f"[*] Scanning {len(subnets)} detected subnets for active hosts...")
+    # Iterate through each subnet and perform a Nmap scan to find active hosts
+    for subnet in subnets:
+        try:
+            nm.scan(hosts=subnet, arguments='-sn')  # Run a ping scan to detect active hosts
+            if nm.all_hosts():  # If there are any hosts found in the subnet
+                available.append(subnet)  # Add the subnet to the list of available subnets
+        except Exception as e:
+            # If an error occurs during the scan, print the error message
+            print(f"Error scanning subnet {subnet}: {e}")
+
+    return available  # Return the list of available subnets with active hosts
+
+# Detect OS and scan open ports
+def scan_devices(subnet, vuln_db):
+    nm = nmap.PortScanner()  # Initialize the Nmap port scanner
+    print(f"Scanning subnet {subnet} for devices")
+
+    try:
+        # Perform a full scan on the subnet, including OS detection and version detection for services
+        nm.scan(hosts=subnet, arguments='-O -sV')
+    except Exception as e:
+        # If the scan fails, print an error and return an empty list
+        print(f"Error scanning subnet {subnet}: {e}")
+        return []
+
+    results = []  # List to hold results of the device scan
+
+    # Iterate over all the hosts found in the scan
+    for host in nm.all_hosts():
+        # Try to extract the operating system information from the scan results
+        os_name = nm[host]['osmatch'][0]['name'] if nm[host].has_key('osmatch') and nm[host]['osmatch'] else "Unknown"
+        eol_vulns = []  # List to hold vulnerabilities for end-of-life operating systems
+
+        # Check if the OS is in the vulnerability database (EOL - End of Life)
+        for known_os in vuln_db:
+            if known_os.lower() in os_name.lower():  # Compare the OS name case-insensitively
+                eol_vulns = vuln_db[known_os]  # Get vulnerabilities associated with the OS
+                break
+
+        open_ports = []  # List to hold information about open ports on the host
+        if 'tcp' in nm[host]:  # If there are any TCP ports open
+            for port in nm[host]['tcp']:
+                service = nm[host]['tcp'][port].get('name', 'unknown')  # Get the service name
+                product = nm[host]['tcp'][port].get('product', 'unknown')  # Get the product running on the port
+                open_ports.append((port, service, product))  # Store the port, service, and product information
+
+        # Append the device information to the results list
+        results.append({
+            'host': host,
+            'os': os_name,
+            'eol': bool(eol_vulns),  # Whether the OS is EOL (has vulnerabilities)
+            'vulnerabilities': eol_vulns,  # List of vulnerabilities if EOL
+            'open_ports': open_ports  # List of open ports
+        })
+
+    return results  # Return the list of scan results
+
+# Generate CSV and TXT report
+def generate_report(results, output_prefix="report"):
+    # Create a timestamp to include in the filename for uniqueness
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    csv_file = f"{output_prefix}_{timestamp}.csv"  # CSV filename
+    txt_file = f"{output_prefix}_{timestamp}.txt"  # TXT filename
+
+    # Open both CSV and TXT files for writing
+    with open(csv_file, 'w', newline='') as csvfile, open(txt_file, 'w') as txtfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['IP Address', 'Detected OS', 'EOL', 'Open Ports', 'Vulnerabilities'])  # Write the header row
+
+        # Iterate through the results and write to the CSV and TXT files
+        for device in results:
+            # Create a summary of vulnerabilities if the OS is EOL
+            vuln_summary = "; ".join([f"{cve}: {info['description']}" for cve, info in device['vulnerabilities'].items()]) if device['eol'] else "N/A"
+            # Create a summary of open ports
+            ports_summary = ", ".join([f"{p}/{s}" for p, s, _ in device['open_ports']])
+
+            # Write the device information to the CSV file
+            writer.writerow([device['host'], device['os'], device['eol'], ports_summary, vuln_summary])
+
+            # Write detailed information to the TXT file
+            txtfile.write(f"\nHost: {device['host']}\n")
+            txtfile.write(f"OS: {device['os']}\n")
+            txtfile.write(f"EOL: {device['eol']}\n")
+            txtfile.write(f"Open Ports: {ports_summary}\n")
+            if device['eol']:
+                txtfile.write("Vulnerabilities:\n")
+                for cve, info in device['vulnerabilities'].items():
+                    txtfile.write(f"  {cve}: {info['description']}\n")
+            txtfile.write("-" * 60 + "\n")
+
+    # Print a message indicating where the reports are saved
+    print(f"Report saved as {csv_file} and {txt_file}")
+
+# Main execution flow
+def main():
+    # Load the vulnerability database
+    vuln_db = load_vuln_db("vuln_db.json")
+    if not vuln_db:
+        # If the vulnerability database is empty, print an error and exits
+        print("Vulnerabilities database failed to load")
+        return
+
+    # Detects the active networks (subnets) on the local machine
+    networks = detect_networks()
+    if not networks:
+        # If no active networks are found, print an error and exit
+        print("No active local networks found")
+        return
+
+    # Print the available networks for the user to choose from
+    print("\nAvailable Networks:")
+    for i, net in enumerate(networks):
+        print(f"{i + 1}: {net}")
+
+    # Prompt the user to select a network to scan
+    choice = input("Select a network to scan (1-{0}): ".format(len(networks)))
+    try:
+        # Convert the user's input to the corresponding subnet
+        subnet = networks[int(choice) - 1]
+    except:
+        # If the input is invalid, print an error and exit
+        print("Invalid selection. Exiting.")
+        return
+
+    # Scan the selected subnet for devices and vulnerabilities
+    results = scan_devices(subnet, vuln_db)
+    if results:
+        # If devices are found, generate the report
+        generate_report(results)
     else:
-        generate_report(devices)
+        # If no devices are found, print an error message
+        print("No devices found or scan failed.")
 
 if __name__ == "__main__":
-    main()
+    main()  # Call the main function to start the program
