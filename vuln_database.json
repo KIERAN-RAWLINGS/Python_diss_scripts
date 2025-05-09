@@ -220,6 +220,8 @@
       "description": "Privilege escalation through win32k component",
       "cvss_v2": {
         "base_score": 7.2,
-        "vector": "AV:L/AC:L/Au”
-        }
+        "vector": "AV:L/AC:L/Au:N/C:C/I:C/A:C"
+      }
+    }
+  }
 }
