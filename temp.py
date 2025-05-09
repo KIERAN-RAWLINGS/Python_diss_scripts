@@ -50,40 +50,46 @@ def detect_networks():
 # Detect OS and scan open ports
 def scan_devices(subnet, vuln_db):
     nm = nmap.PortScanner()
-    print(f"[*] Scanning subnet {subnet} for devices...")
-
+    print(f"\n[*] Scanning subnet {subnet} for devices and OS info...")
+    
     try:
-        nm.scan(hosts=subnet, arguments='-O -sV')
+        # Run Nmap with OS detection and SYN port scan (requires sudo)
+        nm.scan(hosts=subnet, arguments='-O -sS -T4')
     except Exception as e:
-        print(f"[!] Error scanning subnet {subnet}: {e}")
+        print(f"[!] Nmap scan failed: {e}")
         return []
 
     results = []
 
     for host in nm.all_hosts():
-        os_name = nm[host]['osmatch'][0]['name'] if nm[host].has_key('osmatch') and nm[host]['osmatch'] else "Unknown"
-        eol_vulns = []
+        os_name = "Unknown"
+        try:
+            if 'osmatch' in nm[host] and nm[host]['osmatch']:
+                os_name = nm[host]['osmatch'][0]['name']
+        except Exception as e:
+            print(f"[!] Could not determine OS for {host}: {e}")
 
-        # Match OS to EOL database
-        for known_os in vuln_db:
-            if known_os.lower() in os_name.lower():
-                eol_vulns = vuln_db[known_os]
-                break
+        is_eol = os_name in vuln_db
+        vulnerabilities = vuln_db.get(os_name, {})
 
         open_ports = []
-        if 'tcp' in nm[host]:
-            for port in nm[host]['tcp']:
-                service = nm[host]['tcp'][port].get('name', 'unknown')
-                product = nm[host]['tcp'][port].get('product', 'unknown')
-                open_ports.append((port, service, product))
+        try:
+            if 'tcp' in nm[host]:
+                for port in nm[host]['tcp']:
+                    service = nm[host]['tcp'][port]['name']
+                    open_ports.append(f"{port}/{service}")
+        except Exception as e:
+            print(f"[!] Error retrieving open ports for {host}: {e}")
 
-        results.append({
-            'host': host,
-            'os': os_name,
-            'eol': bool(eol_vulns),
-            'vulnerabilities': eol_vulns,
-            'open_ports': open_ports
-        })
+        device_info = {
+            "ip": host,
+            "os": os_name,
+            "eol": is_eol,
+            "vulns": vulnerabilities,
+            "open_ports": open_ports
+        }
+
+        results.append(device_info)
 
     return results
 
