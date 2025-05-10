@@ -61,12 +61,13 @@ def detect_networks():
     return available  # Return the list of available subnets with active hosts
 
 def scan_devices(subnet, vuln_db):
+    import json
     nm = nmap.PortScanner()
     print(f"Scanning subnet {subnet} for devices")
 
     try:
-        # Aggressive scan: OS detection, version detection, and SMB info
-        nm.scan(hosts=subnet, arguments='-O -sS -sV --script smb-os-discovery')
+        # Aggressive OS detection with fallback to SMB detection
+        nm.scan(hosts=subnet, arguments='-O --osscan-guess --max-os-tries 5 -sS -sV')
     except Exception as e:
         print(f"Error scanning subnet {subnet}: {e}")
         return []
@@ -77,53 +78,47 @@ def scan_devices(subnet, vuln_db):
         os_name = "Unknown"
         eol_vulns = {}
 
-        # Try OS detection via osmatch
+        # Primary OS detection
         if 'osmatch' in nm[host] and nm[host]['osmatch']:
             os_name = nm[host]['osmatch'][0]['name']
-
-        # Fallback to osclass
         elif 'osclass' in nm[host] and nm[host]['osclass']:
-            os_families = [c.get('osfamily', '') for c in nm[host]['osclass']]
-            if os_families:
-                os_name = os_families[0]
+            families = [c['osfamily'] for c in nm[host]['osclass'] if 'osfamily' in c]
+            if families:
+                os_name = families[0]
 
-        # Fallback to SMB-based OS discovery (script output)
-        elif 'hostscript' in nm[host]:
-            for script in nm[host]['hostscript']:
-                if script['id'] == 'smb-os-discovery':
-                    output = script.get('output', '')
-                    if "Windows 7" in output:
-                        os_name = "Windows 7"
-                    elif "Windows XP" in output:
-                        os_name = "Windows XP"
-                    elif "Windows 8.1" in output:
-                        os_name = "Windows 8.1"
-                    elif "Windows" in output:
-                        os_name = output.strip()
+        # Fallback: If OS still unknown, use smb-os-discovery script
+        if os_name == "Unknown":
+            try:
+                smb_scan = nm.scan(hosts=host, arguments='-p 445 --script smb-os-discovery')
+                script_output = smb_scan['scan'][host]['hostscript'][0]['output']
+                if "Windows XP" in script_output:
+                    os_name = "Windows XP"
+                elif "Windows 7" in script_output:
+                    os_name = "Windows 7"
+                elif "Windows 8.1" in script_output:
+                    os_name = "Windows 8.1"
+                else:
+                    # Attempt to extract from general SMB info
+                    os_name = script_output.strip().splitlines()[0]
+            except Exception as e:
+                print(f"[DEBUG] SMB OS detection failed on {host}: {e}")
 
-        # Normalize ambiguous OS names to known EOL targets
-        if "Windows" in os_name:
-            lower = os_name.lower()
-            if 'xp' in lower:
-                os_name = "Windows XP"
-            elif '2008' in lower or 'windows 7' in lower:
-                os_name = "Windows 7"
-            elif '8.1' in lower or 'windows 8' in lower:
-                os_name = "Windows 8.1"
+        # Normalize known OS names
+        os_lower = os_name.lower()
+        if "xp" in os_lower:
+            os_name = "Windows XP"
+        elif "windows 7" in os_lower or "2008" in os_lower:
+            os_name = "Windows 7"
+        elif "8.1" in os_lower:
+            os_name = "Windows 8.1"
 
-        # Match OS against vuln DB
+        # Match EOL status
         for known_os in vuln_db:
             if known_os.lower() in os_name.lower():
                 eol_vulns = vuln_db[known_os]
                 break
 
-        # Debug: Print raw data if OS still unknown
-        if os_name == "Unknown":
-            print(f"[DEBUG] No OS detected for {host}")
-            print("Nmap data:")
-            print(json.dumps(nm[host], indent=2))
-
-        # Get open ports
+        # Open port collection
         open_ports = []
         if 'tcp' in nm[host]:
             for port in nm[host]['tcp']:
@@ -140,6 +135,7 @@ def scan_devices(subnet, vuln_db):
         })
 
     return results
+
 
 
 # Generate CSV and TXT report
