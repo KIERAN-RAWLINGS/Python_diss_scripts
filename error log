@@ -20,3 +20,6 @@ Traceback (most recent call last):
     os_name = nm[host]['osmatch'][0]['name'] if nm[host].has_key('osmatch') and nm[host]['osmatch'] else "Unknown"
                                                 ^^^^^^^^^^^^^^^^
 AttributeError: 'PortScannerHostDict' object has no attribute 'has_key'
+
+
+os_name = nm[host]['osmatch'][0]['name'] if 'osmatch' in nm[host] and nm[host]['osmatch'] else "Unknown"
