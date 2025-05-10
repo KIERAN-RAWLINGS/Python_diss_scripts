@@ -26,7 +26,6 @@ os_name = nm[host]['osmatch'][0]['name'] if 'osmatch' in nm[host] and nm[host]['
 
 ####
 
-
 Host: 192.168.1.1
 OS: FreeBSD 11.2-RELEASE
 EOL: False
@@ -82,5 +81,3 @@ Vulnerabilities:
   CVE-2020-0796: SMBGhost: SMBv3 compression RCE (only if SMBv3 backported)
 ------------------------------------------------------------
 
-
-####
