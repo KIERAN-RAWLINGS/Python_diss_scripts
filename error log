@@ -23,3 +23,64 @@ AttributeError: 'PortScannerHostDict' object has no attribute 'has_key'
 
 
 os_name = nm[host]['osmatch'][0]['name'] if 'osmatch' in nm[host] and nm[host]['osmatch'] else "Unknown"
+
+####
+
+
+Host: 192.168.1.1
+OS: FreeBSD 11.2-RELEASE
+EOL: False
+Open Ports: 53/domain, 80/http, 443/http
+------------------------------------------------------------
+
+Host: 192.168.1.100
+OS: Unknown
+EOL: False
+Open Ports: 
+------------------------------------------------------------
+
+Host: 192.168.1.101
+OS: Unknown
+EOL: False
+Open Ports: 
+------------------------------------------------------------
+
+Host: 192.168.1.102
+OS: Unknown
+EOL: False
+Open Ports: 
+------------------------------------------------------------
+
+Host: 192.168.1.103
+OS: Unknown
+EOL: False
+Open Ports: 
+------------------------------------------------------------
+
+Host: 192.168.1.106
+OS: Unknown
+EOL: False
+Open Ports: 
+------------------------------------------------------------
+
+Host: 192.168.1.107
+OS: Microsoft Windows Server 2008 R2 or Windows 7 SP1
+EOL: True
+Open Ports: 5357/http
+Vulnerabilities:
+  CVE-2012-0158: MSCOMCTL ActiveX control remote code execution (widely exploited)
+  CVE-2015-1701: Win32k.sys elevation of privilege vulnerability
+  CVE-2016-0167: Win32k kernel memory corruption allowing EoP
+  CVE-2016-7255: Win32k.sys EoP used in targeted attacks post-SP1
+  CVE-2017-0143: SMBv1 information disclosure (precursor to EternalBlue)
+  CVE-2017-0144: EternalBlue SMBv1 RCE (WannaCry exploit)
+  CVE-2017-0145: EternalRomance SMBv1 RCE vulnerability
+  CVE-2017-11882: Microsoft Equation Editor RCE (used in phishing)
+  CVE-2018-8174: VBScript engine RCE (Double Kill, exploited via IE)
+  CVE-2019-0708: BlueKeep: RDP wormable RCE
+  CVE-2020-0601: CurveBall: CryptoAPI spoofing (affects Windows 7 SP1)
+  CVE-2020-0796: SMBGhost: SMBv3 compression RCE (only if SMBv3 backported)
+------------------------------------------------------------
+
+
+####
