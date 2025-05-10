@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Load vulnerability database
-def load_vuln_db(filename="vulnerabilities.json"):
+def load_vuln_db(filename="vuln_db.json"):
     try:
         # Open the JSON file containing the vulnerability information
         with open(filename, 'r') as f:
@@ -78,7 +78,8 @@ def scan_devices(subnet, vuln_db):
     # Iterate over all the hosts found in the scan
     for host in nm.all_hosts():
         # Try to extract the operating system information from the scan results
-        os_name = nm[host]['osmatch'][0]['name'] if nm[host].has_key('osmatch') and nm[host]['osmatch'] else "Unknown"
+        os_name = nm[host]['osmatch'][0]['name'] if 'osmatch' in nm[host] and nm[host]['osmatch'] else "Unknown"
+        # os_name = nm[host]['osmatch'][0]['name'] if nm[host].has_key('osmatch') and nm[host]['osmatch'] else "Unknown"
         eol_vulns = []  # List to hold vulnerabilities for end-of-life operating systems
 
         # Check if the OS is in the vulnerability database (EOL - End of Life)
@@ -144,7 +145,7 @@ def generate_report(results, output_prefix="report"):
 # Main execution flow
 def main():
     # Load the vulnerability database
-    vuln_db = load_vuln_db("vuln_db.json")
+    vuln_db = load_vuln_db("vulnerabilities.json")
     if not vuln_db:
         # If the vulnerability database is empty, print an error and exits
         print("Vulnerabilities database failed to load")
