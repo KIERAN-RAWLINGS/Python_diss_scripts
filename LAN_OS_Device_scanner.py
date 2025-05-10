@@ -61,6 +61,7 @@ def detect_networks():
     return available  # Return the list of available subnets with active hosts
 
 # Detect OS and scan open ports
+# Detect OS and scan open ports
 def scan_devices(subnet, vuln_db):
     nm = nmap.PortScanner()  # Initialize the Nmap port scanner
     print(f"Scanning subnet {subnet} for devices")
@@ -77,34 +78,41 @@ def scan_devices(subnet, vuln_db):
 
     # Iterate over all the hosts found in the scan
     for host in nm.all_hosts():
-        # Try to extract the operating system information from the scan results
-        os_name = nm[host]['osmatch'][0]['name'] if 'osmatch' in nm[host] and nm[host]['osmatch'] else "Unknown"
-        # os_name = nm[host]['osmatch'][0]['name'] if nm[host].has_key('osmatch') and nm[host]['osmatch'] else "Unknown"
-        eol_vulns = []  # List to hold vulnerabilities for end-of-life operating systems
+        os_name = "Unknown"
 
-        # Check if the OS is in the vulnerability database (EOL - End of Life)
+        # Try to extract OS name from 'osmatch'
+        if 'osmatch' in nm[host] and nm[host]['osmatch']:
+            os_name = nm[host]['osmatch'][0]['name']
+        # If osmatch is empty, try 'osclass'
+        elif 'osclass' in nm[host]:
+            for cls in nm[host]['osclass']:
+                if 'osfamily' in cls:
+                    os_name = cls['osfamily']
+                    break
+
+        # Check if OS is in EOL vulnerability database
+        eol_vulns = {}
         for known_os in vuln_db:
-            if known_os.lower() in os_name.lower():  # Compare the OS name case-insensitively
-                eol_vulns = vuln_db[known_os]  # Get vulnerabilities associated with the OS
+            if known_os.lower() in os_name.lower():
+                eol_vulns = vuln_db[known_os]
                 break
 
-        open_ports = []  # List to hold information about open ports on the host
-        if 'tcp' in nm[host]:  # If there are any TCP ports open
+        open_ports = []
+        if 'tcp' in nm[host]:
             for port in nm[host]['tcp']:
-                service = nm[host]['tcp'][port].get('name', 'unknown')  # Get the service name
-                product = nm[host]['tcp'][port].get('product', 'unknown')  # Get the product running on the port
-                open_ports.append((port, service, product))  # Store the port, service, and product information
+                service = nm[host]['tcp'][port].get('name', 'unknown')
+                product = nm[host]['tcp'][port].get('product', 'unknown')
+                open_ports.append((port, service, product))
 
-        # Append the device information to the results list
         results.append({
             'host': host,
             'os': os_name,
-            'eol': bool(eol_vulns),  # Whether the OS is EOL (has vulnerabilities)
-            'vulnerabilities': eol_vulns,  # List of vulnerabilities if EOL
-            'open_ports': open_ports  # List of open ports
+            'eol': bool(eol_vulns),
+            'vulnerabilities': eol_vulns,
+            'open_ports': open_ports
         })
 
-    return results  # Return the list of scan results
+    return results
 
 # Generate CSV and TXT report
 def generate_report(results, output_prefix="report"):
