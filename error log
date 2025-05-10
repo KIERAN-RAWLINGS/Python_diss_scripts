@@ -1,0 +1,22 @@
+error log
+
+(.venv) ┌──(.venv)─(kieran㉿kali)-[~/Downloads/Project]
+└─$ /home/kieran/Downloads/Project/.venv/bin/python /home/kieran/Downloads/Project/LAN_OS_Device_scanner.py
+Detecting active interfaces and calculating subnets
+[*] Scanning 1 detected subnets for active hosts...
+
+Available Networks:
+1: 10.140.196.131/20
+Select a network to scan (1-1): 1   
+Scanning subnet 10.140.196.131/20 for devices
+Traceback (most recent call last):
+  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 185, in <module>
+    main()  # Call the main function to start the program
+    ^^^^^^
+  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 176, in main
+    results = scan_devices(subnet, vuln_db)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 81, in scan_devices
+    os_name = nm[host]['osmatch'][0]['name'] if nm[host].has_key('osmatch') and nm[host]['osmatch'] else "Unknown"
+                                                ^^^^^^^^^^^^^^^^
+AttributeError: 'PortScannerHostDict' object has no attribute 'has_key'
