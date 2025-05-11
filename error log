@@ -1,71 +1,19 @@
-error log
-
-(.venv) ┌──(.venv)─(kieran㉿kali)-[~/Downloads/Project]
-└─$ /home/kieran/Downloads/Project/.venv/bin/python /home/kieran/Downloads/Project/LAN_OS_Device_scanner.py
-Detecting active interfaces and calculating subnets
-[*] Scanning 1 detected subnets for active hosts...
-
-Available Networks:
-1: 10.140.196.131/20
-Select a network to scan (1-1): 1   
-Scanning subnet 10.140.196.131/20 for devices
-Traceback (most recent call last):
-  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 185, in <module>
-    main()  # Call the main function to start the program
-    ^^^^^^
-  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 176, in main
-    results = scan_devices(subnet, vuln_db)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 81, in scan_devices
-    os_name = nm[host]['osmatch'][0]['name'] if nm[host].has_key('osmatch') and nm[host]['osmatch'] else "Unknown"
-                                                ^^^^^^^^^^^^^^^^
-AttributeError: 'PortScannerHostDict' object has no attribute 'has_key'
-
-
-os_name = nm[host]['osmatch'][0]['name'] if 'osmatch' in nm[host] and nm[host]['osmatch'] else "Unknown"
-
-####
-
 Host: 192.168.1.1
 OS: FreeBSD 11.2-RELEASE
 EOL: False
 Open Ports: 53/domain, 80/http, 443/http
 ------------------------------------------------------------
 
-Host: 192.168.1.100
-OS: Unknown
-EOL: False
-Open Ports: 
-------------------------------------------------------------
-
 Host: 192.168.1.101
-OS: Unknown
+OS: Microsoft Windows Server 2003 SP2
 EOL: False
-Open Ports: 
-------------------------------------------------------------
-
-Host: 192.168.1.102
-OS: Unknown
-EOL: False
-Open Ports: 
+Open Ports: 135/msrpc, 139/netbios-ssn, 445/microsoft-ds, 1027/msrpc
 ------------------------------------------------------------
 
 Host: 192.168.1.103
-OS: Unknown
-EOL: False
-Open Ports: 
-------------------------------------------------------------
-
-Host: 192.168.1.106
-OS: Unknown
-EOL: False
-Open Ports: 
-------------------------------------------------------------
-
-Host: 192.168.1.107
-OS: Microsoft Windows Server 2008 R2 or Windows 7 SP1
+OS: Windows 7
 EOL: True
-Open Ports: 5357/http
+Open Ports: 135/msrpc, 139/netbios-ssn, 445/microsoft-ds, 5357/http, 49152/msrpc, 49153/msrpc, 49154/msrpc, 49155/msrpc, 49156/msrpc, 49157/msrpc
 Vulnerabilities:
   CVE-2012-0158: MSCOMCTL ActiveX control remote code execution (widely exploited)
   CVE-2015-1701: Win32k.sys elevation of privilege vulnerability
@@ -81,30 +29,29 @@ Vulnerabilities:
   CVE-2020-0796: SMBGhost: SMBv3 compression RCE (only if SMBv3 backported)
 ------------------------------------------------------------
 
+Host: 192.168.1.106
+OS: Unknown
+EOL: False
+Open Ports: 
+------------------------------------------------------------
 
+Host: 192.168.1.107
+OS: Windows 7
+EOL: True
+Open Ports: 135/msrpc, 139/netbios-ssn, 445/microsoft-ds, 5357/http, 49152/msrpc, 49153/msrpc, 49154/msrpc, 49155/msrpc, 49156/msrpc, 49157/msrpc, 49161/msrpc
+Vulnerabilities:
+  CVE-2012-0158: MSCOMCTL ActiveX control remote code execution (widely exploited)
+  CVE-2015-1701: Win32k.sys elevation of privilege vulnerability
+  CVE-2016-0167: Win32k kernel memory corruption allowing EoP
+  CVE-2016-7255: Win32k.sys EoP used in targeted attacks post-SP1
+  CVE-2017-0143: SMBv1 information disclosure (precursor to EternalBlue)
+  CVE-2017-0144: EternalBlue SMBv1 RCE (WannaCry exploit)
+  CVE-2017-0145: EternalRomance SMBv1 RCE vulnerability
+  CVE-2017-11882: Microsoft Equation Editor RCE (used in phishing)
+  CVE-2018-8174: VBScript engine RCE (Double Kill, exploited via IE)
+  CVE-2019-0708: BlueKeep: RDP wormable RCE
+  CVE-2020-0601: CurveBall: CryptoAPI spoofing (affects Windows 7 SP1)
+  CVE-2020-0796: SMBGhost: SMBv3 compression RCE (only if SMBv3 backported)
+------------------------------------------------------------
 
-####
-
-
-Available Networks:
-1: 192.168.1.106/24
-Select a network to scan (1-1): 1    
-Scanning subnet 192.168.1.106/24 for devices
-[DEBUG] SMB OS detection failed on 192.168.1.106: 'hostscript'
-Traceback (most recent call last):
-  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 217, in <module>
-    main()  # Call the main function to start the program
-    ^^^^^^
-  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 208, in main
-    results = scan_devices(subnet, vuln_db)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 83, in scan_devices
-    if 'osmatch' in nm[host] and nm[host]['osmatch']:
-                    ~~^^^^^^
-  File "/home/kieran/Downloads/Project/.venv/lib/python3.12/site-packages/nmap/nmap.py", line 600, in __getitem__
-    return self._scan_result["scan"][host]
-           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
-KeyError: '192.168.1.107'
-
-####
 
