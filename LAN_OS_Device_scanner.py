@@ -60,9 +60,6 @@ def detect_networks():
 
     return available  # Return the list of available subnets with active hosts
 
-import nmap
-import json
-
 def scan_devices(subnet, vuln_db):
     nm = nmap.PortScanner()
     print(f"Scanning subnet {subnet} for devices")
