@@ -81,3 +81,30 @@ Vulnerabilities:
   CVE-2020-0796: SMBGhost: SMBv3 compression RCE (only if SMBv3 backported)
 ------------------------------------------------------------
 
+
+
+####
+
+
+Available Networks:
+1: 192.168.1.106/24
+Select a network to scan (1-1): 1    
+Scanning subnet 192.168.1.106/24 for devices
+[DEBUG] SMB OS detection failed on 192.168.1.106: 'hostscript'
+Traceback (most recent call last):
+  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 217, in <module>
+    main()  # Call the main function to start the program
+    ^^^^^^
+  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 208, in main
+    results = scan_devices(subnet, vuln_db)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kieran/Downloads/Project/LAN_OS_Device_scanner.py", line 83, in scan_devices
+    if 'osmatch' in nm[host] and nm[host]['osmatch']:
+                    ~~^^^^^^
+  File "/home/kieran/Downloads/Project/.venv/lib/python3.12/site-packages/nmap/nmap.py", line 600, in __getitem__
+    return self._scan_result["scan"][host]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+KeyError: '192.168.1.107'
+
+####
+
