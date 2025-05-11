@@ -60,12 +60,14 @@ def detect_networks():
 
     return available  # Return the list of available subnets with active hosts
 
+import nmap
+import json
+
 def scan_devices(subnet, vuln_db):
     nm = nmap.PortScanner()
     print(f"Scanning subnet {subnet} for devices")
 
     try:
-        # Aggressive OS detection with retries and service versioning
         nm.scan(hosts=subnet, arguments='-O --osscan-guess --max-os-tries 5 -sS -sV')
     except Exception as e:
         print(f"Error scanning subnet {subnet}: {e}")
@@ -77,31 +79,44 @@ def scan_devices(subnet, vuln_db):
         os_name = "Unknown"
         eol_vulns = {}
 
-        # Attempt OS detection using osmatch
+        # Try primary OS match
         if 'osmatch' in nm[host] and nm[host]['osmatch']:
             os_match = nm[host]['osmatch'][0]
             os_name = os_match['name']
-        # Fallback to osclass
         elif 'osclass' in nm[host] and nm[host]['osclass']:
             os_families = [c['osfamily'] for c in nm[host]['osclass'] if 'osfamily' in c]
             if os_families:
                 os_name = os_families[0]
 
-        # Normalize known Windows versions
-        if 'Windows' in os_name:
-            os_lower = os_name.lower()
-            if 'xp' in os_lower:
+        # Normalize known Windows and Linux versions
+        if 'windows' in os_name.lower():
+            lower = os_name.lower()
+            if 'xp' in lower:
                 os_name = "Windows XP"
-            elif '2003' in os_lower:
+            elif '2003' in lower:
                 os_name = "Windows Server 2003"
-            elif 'windows 7' in os_lower or '2008' in os_lower:
+            elif 'windows 7' in lower or '2008' in lower:
                 os_name = "Windows 7"
-            elif 'windows 8.1' in os_lower or '6.3' in os_lower:
+            elif '6.3' in lower or 'windows 8.1' in lower:
                 os_name = "Windows 8.1"
-            elif 'windows 8' in os_lower or '6.2' in os_lower:
+            elif '6.2' in lower or 'windows 8' in lower:
                 os_name = "Windows 8"
+            elif '10.0' in lower or 'windows 10' in lower:
+                os_name = "Windows 10"
+            elif 'windows 11' in lower or '10.0.22' in lower:
+                os_name = "Windows 11"
 
-        # SMB fallback for better Windows version detection
+        elif 'ubuntu' in os_name.lower():
+            if '24.04' in os_name:
+                os_name = "Ubuntu 24.04"
+            elif '22.04' in os_name:
+                os_name = "Ubuntu 22.04"
+            elif '20.04' in os_name:
+                os_name = "Ubuntu 20.04"
+            elif '18.04' in os_name:
+                os_name = "Ubuntu 18.04"
+
+        # SMB fallback for Windows
         if os_name == "Unknown" or os_name.startswith("Windows"):
             try:
                 smb_nm = nmap.PortScanner()
@@ -112,26 +127,26 @@ def scan_devices(subnet, vuln_db):
 
                     if "windows 6.1" in output_text:
                         os_name = "Windows 7"
-                    elif "windows 6.3" in output_text or "windows 8.1" in output_text:
+                    elif "windows 6.3" in output_text:
                         os_name = "Windows 8.1"
                     elif "windows 6.2" in output_text:
                         os_name = "Windows 8"
+                    elif "windows 10" in output_text or "10.0" in output_text:
+                        os_name = "Windows 10"
                     elif "windows xp" in output_text:
                         os_name = "Windows XP"
                     elif "windows server 2003" in output_text:
                         os_name = "Windows Server 2003"
-                    else:
-                        os_name = output_text.strip().splitlines()[0]
             except Exception as e:
                 print(f"[DEBUG] SMB OS detection failed on {host}: {e}")
 
-        # EOL matching from vuln database
+        # Match EOL vulnerabilities
         for known_os in vuln_db:
             if known_os.lower() in os_name.lower():
                 eol_vulns = vuln_db[known_os]
                 break
 
-        # Debug: show raw fingerprint if OS is still unknown
+        # Debug unknown
         if os_name == "Unknown":
             print(f"\n[DEBUG] Raw Nmap fingerprint for host {host}:")
             if 'osmatch' in nm[host]:
@@ -141,7 +156,6 @@ def scan_devices(subnet, vuln_db):
             else:
                 print("  No OS fingerprint available.")
 
-        # Get open ports and services
         open_ports = []
         if 'tcp' in nm[host]:
             for port in nm[host]['tcp']:
@@ -158,6 +172,7 @@ def scan_devices(subnet, vuln_db):
         })
 
     return results
+
 
 # Generate CSV and TXT report
 def generate_report(results, output_prefix="report"):
