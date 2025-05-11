@@ -66,7 +66,7 @@ def scan_devices(subnet, vuln_db):
     print(f"Scanning subnet {subnet} for devices")
 
     try:
-        # Aggressive OS detection with fallback to SMB detection
+        # Initial scan with aggressive OS detection
         nm.scan(hosts=subnet, arguments='-O --osscan-guess --max-os-tries 5 -sS -sV')
     except Exception as e:
         print(f"Error scanning subnet {subnet}: {e}")
@@ -78,32 +78,37 @@ def scan_devices(subnet, vuln_db):
         os_name = "Unknown"
         eol_vulns = {}
 
-        # Primary OS detection
-        if 'osmatch' in nm[host] and nm[host]['osmatch']:
-            os_name = nm[host]['osmatch'][0]['name']
-        elif 'osclass' in nm[host] and nm[host]['osclass']:
-            families = [c['osfamily'] for c in nm[host]['osclass'] if 'osfamily' in c]
-            if families:
-                os_name = families[0]
+        try:
+            # Check for OS match from the main scan
+            if 'osmatch' in nm[host] and nm[host]['osmatch']:
+                os_name = nm[host]['osmatch'][0]['name']
+            elif 'osclass' in nm[host] and nm[host]['osclass']:
+                families = [c['osfamily'] for c in nm[host]['osclass'] if 'osfamily' in c]
+                if families:
+                    os_name = families[0]
+        except Exception as e:
+            print(f"[DEBUG] OS parsing failed for {host}: {e}")
 
-        # Fallback: If OS still unknown, use smb-os-discovery script
+        # Fallback to SMB OS detection
         if os_name == "Unknown":
             try:
-                smb_scan = nm.scan(hosts=host, arguments='-p 445 --script smb-os-discovery')
-                script_output = smb_scan['scan'][host]['hostscript'][0]['output']
-                if "Windows XP" in script_output:
-                    os_name = "Windows XP"
-                elif "Windows 7" in script_output:
-                    os_name = "Windows 7"
-                elif "Windows 8.1" in script_output:
-                    os_name = "Windows 8.1"
-                else:
-                    # Attempt to extract from general SMB info
-                    os_name = script_output.strip().splitlines()[0]
+                smb_nm = nmap.PortScanner()
+                smb_nm.scan(hosts=host, arguments='-p 445 --script smb-os-discovery')
+                smb_output = smb_nm[host].get('hostscript', [])
+                if smb_output:
+                    output_text = smb_output[0].get('output', '')
+                    if "Windows XP" in output_text:
+                        os_name = "Windows XP"
+                    elif "Windows 7" in output_text:
+                        os_name = "Windows 7"
+                    elif "Windows 8.1" in output_text:
+                        os_name = "Windows 8.1"
+                    elif output_text:
+                        os_name = output_text.strip().splitlines()[0]
             except Exception as e:
                 print(f"[DEBUG] SMB OS detection failed on {host}: {e}")
 
-        # Normalize known OS names
+        # Normalize known Windows versions
         os_lower = os_name.lower()
         if "xp" in os_lower:
             os_name = "Windows XP"
@@ -112,13 +117,13 @@ def scan_devices(subnet, vuln_db):
         elif "8.1" in os_lower:
             os_name = "Windows 8.1"
 
-        # Match EOL status
+        # EOL matching
         for known_os in vuln_db:
             if known_os.lower() in os_name.lower():
                 eol_vulns = vuln_db[known_os]
                 break
 
-        # Open port collection
+        # Gather open ports
         open_ports = []
         if 'tcp' in nm[host]:
             for port in nm[host]['tcp']:
@@ -135,6 +140,7 @@ def scan_devices(subnet, vuln_db):
         })
 
     return results
+
 
 
 
