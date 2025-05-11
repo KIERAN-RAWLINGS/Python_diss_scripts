@@ -5,9 +5,22 @@ Open Ports: 53/domain, 80/http, 443/http
 ------------------------------------------------------------
 
 Host: 192.168.1.101
-OS: Microsoft Windows Server 2003 SP2
-EOL: False
+OS: Windows XP
+EOL: True
 Open Ports: 135/msrpc, 139/netbios-ssn, 445/microsoft-ds, 1027/msrpc
+Vulnerabilities:
+  CVE-2002-0367: Remote code execution in Universal Plug and Play (UPnP, enabled by default)
+  CVE-2003-0352: Buffer overflow in RPC interface (DCOM, Blaster worm exploit)
+  CVE-2003-0533: Windows Help Center remote code execution via buffer overflow
+  CVE-2003-0812: ASN.1 vulnerability in MSASN1.DLL (code execution via malformed certificates)
+  CVE-2004-0120: LSASS buffer overflow (Sasser worm exploit)
+  CVE-2004-0420: LSASS unchecked buffer remote code execution
+  CVE-2004-1134: IIS WebDAV exploit, used to elevate privileges via UNC path
+  CVE-2005-1983: Windows Plug and Play local privilege escalation (pre-SP2)
+  CVE-2005-2120: MSHTML buffer overflow via malicious CHM files
+  CVE-2006-4691: IE 6 memory corruption, RCE via crafted web pages
+  CVE-2008-1083: Win32.sys privilege escalation on pre-SP2 Windows XP
+  CVE-2008-4250: NetAPI32.dll vulnerability (Conficker worm exploit)
 ------------------------------------------------------------
 
 Host: 192.168.1.103
@@ -53,5 +66,6 @@ Vulnerabilities:
   CVE-2020-0601: CurveBall: CryptoAPI spoofing (affects Windows 7 SP1)
   CVE-2020-0796: SMBGhost: SMBv3 compression RCE (only if SMBv3 backported)
 ------------------------------------------------------------
+
 
 
